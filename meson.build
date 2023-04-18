@@ -12,6 +12,16 @@ glib_dep = dependency('glib-2.0', version: '>= 2.68')
 eosmetrics_dep = dependency('eosmetrics-0', version: '>= 0.2')
 polkit_gobject_dep = dependency('polkit-gobject-1')
 
+if get_option('soup2')
+  libsoup_name = 'libsoup-2.4'
+  libsoup_req_version = '>= 2.42'
+else
+  libsoup_name = 'libsoup-3.0'
+  libsoup_req_version = '>= 3.0.0'
+endif
+
+libsoup_dep = dependency(libsoup_name, version: libsoup_req_version)
+
 emer_shared_required_modules = [
     glib_dep,
     dependency('gio-unix-2.0', version: '>= 2.46'),
@@ -24,7 +34,7 @@ emer_required_modules = emer_shared_required_modules + [
     cc.find_library('m', required: false),
     dependency('ostree-1', version: '>= 2013.7'),
     polkit_gobject_dep,
-    dependency('libsoup-3.0'),
+    libsoup_dep,
 ]
 
 gnome = import('gnome')

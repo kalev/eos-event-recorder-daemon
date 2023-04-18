@@ -3,3 +3,7 @@ option('default_metrics_server_url',
     description: 'URL of default metrics server',
     value: 'https://${environment}.azafea.example',
 )
+option('soup2',
+    type: 'boolean',
+    description: 'Whether to build with libsoup-2.4',
+    value: true)
