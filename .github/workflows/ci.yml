@@ -6,7 +6,7 @@ jobs:
   fedora:
     strategy:
       matrix:
-        soup2: ['true', 'false']
+        soup: ['libsoup-2.4', 'libsoup-3.0']
     runs-on: ubuntu-latest
     container: fedora:latest
     steps:
@@ -29,7 +29,7 @@ jobs:
           'pkgconfig(gio-unix-2.0)' \
           'pkgconfig(glib-2.0)' \
           'pkgconfig(gobject-2.0)' \
-          'pkgconfig(libsoup-2.4)' \
+          'pkgconfig(${{ matrix.soup }})' \
           'pkgconfig(ostree-1)' \
           'pkgconfig(polkit-gobject-1)' \
           'pkgconfig(sqlite3)' \
@@ -38,18 +38,10 @@ jobs:
           python3-dbus \
           python3-dbusmock \
           ${NULL+}
-    - name: Install libsoup2
-      if: ${{ matrix.soup2 == 'true' }}
-      run: |
-        sudo dnf -y install 'pkgconfig(libsoup-2.4)'
-    - name: Install libsoup3
-      if: ${{ matrix.soup2 == 'false' }}
-      run: |
-        sudo dnf -y install 'pkgconfig(libsoup-3.0)'
     - name: Meson setup
       run: |
         meson setup _build \
-          -Dsoup2=${{ matrix.soup2 }} \
+          -Dsoup2=${{ (matrix.soup == 'libsoup-2.4' && 'true') || 'false' }} \
           ${NULL+}
     - name: Build
       run: ninja -C _build
