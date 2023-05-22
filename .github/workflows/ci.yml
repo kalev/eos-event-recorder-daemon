@@ -3,8 +3,10 @@ name: CI
 on: [push, pull_request]
 
 jobs:
-  fedora-libsoup2:
-    name: Test with libsoup 2
+  fedora:
+    strategy:
+      matrix:
+        soup2: ['true', 'false']
     runs-on: ubuntu-latest
     container: fedora:latest
     steps:
@@ -36,53 +38,18 @@ jobs:
           python3-dbus \
           python3-dbusmock \
           ${NULL+}
+    - name: Install libsoup2
+      if: ${{ matrix.soup2 == 'true' }}
+      run: |
+        sudo dnf -y install 'pkgconfig(libsoup-2.4)'
+    - name: Install libsoup3
+      if: ${{ matrix.soup2 == 'false' }}
+      run: |
+        sudo dnf -y install 'pkgconfig(libsoup-3.0)'
     - name: Meson setup
       run: |
         meson setup _build \
-          -Dsoup2=true \
-          ${NULL+}
-    - name: Build
-      run: ninja -C _build
-    - name: Run tests
-      run: meson test -C _build
-
-  fedora-libsoup3:
-    name: Test with libsoup 3
-    runs-on: ubuntu-latest
-    container: fedora:latest
-    steps:
-    - uses: actions/checkout@v3
-    - name: Check we are on Fedora
-      run: cat /etc/os-release
-    - name: Update
-      run: |
-        sudo dnf -y update
-    - name: Enable kalev/metrics copr
-      run: |
-        sudo dnf -y install 'dnf-command(copr)'
-        sudo dnf -y copr enable kalev/metrics
-    - name: Install dependencies
-      run: |
-        sudo dnf -y install \
-          gcc \
-          meson \
-          'pkgconfig(eosmetrics-0)' \
-          'pkgconfig(gio-unix-2.0)' \
-          'pkgconfig(glib-2.0)' \
-          'pkgconfig(gobject-2.0)' \
-          'pkgconfig(libsoup-3.0)' \
-          'pkgconfig(ostree-1)' \
-          'pkgconfig(polkit-gobject-1)' \
-          'pkgconfig(sqlite3)' \
-          'pkgconfig(systemd)' \
-          'pkgconfig(uuid)' \
-          python3-dbus \
-          python3-dbusmock \
-          ${NULL+}
-    - name: Meson setup
-      run: |
-        meson setup _build \
-          -Dsoup2=false \
+          -Dsoup2=${{ matrix.soup2 }} \
           ${NULL+}
     - name: Build
       run: ninja -C _build
